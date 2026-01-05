@@ -49,12 +49,12 @@ function getOrCreateNode(
   graph: Graph,
   lat: number,
   lng: number,
-  threshold = 0.0001
+  threshold = 0.0001,
 ): string {
   // Check if a node already exists nearby (within threshold)
   for (const [nodeId, node] of graph.nodes.entries()) {
     const distance = Math.sqrt(
-      Math.pow(node.lat - lat, 2) + Math.pow(node.lng - lng, 2)
+      Math.pow(node.lat - lat, 2) + Math.pow(node.lng - lng, 2),
     );
     if (distance < threshold) {
       return nodeId;
@@ -105,7 +105,7 @@ async function buildGraph(segments: any[]): Promise<Graph> {
       const fromNode = graph.nodes.get(fromId)!;
       const toNode = graph.nodes.get(toId)!;
       const distance = L.latLng(fromNode.lat, fromNode.lng).distanceTo(
-        L.latLng(toNode.lat, toNode.lng)
+        L.latLng(toNode.lat, toNode.lng),
       );
 
       // Create edge from -> to
@@ -149,7 +149,7 @@ async function buildGraph(segments: any[]): Promise<Graph> {
 async function findNearestNode(
   graph: Graph,
   point: [number, number],
-  maxDistance = 1000
+  maxDistance = 1000,
 ): Promise<string | null> {
   const L = await getLeaflet();
   const pointLatlng = L.latLng(point[0], point[1]);
@@ -173,7 +173,7 @@ async function findNearestNode(
 function dijkstra(
   graph: Graph,
   startNodeId: string,
-  endNodeId: string
+  endNodeId: string,
 ): string[] | null {
   const distances = new Map<string, number>();
   const previous = new Map<string, string | null>();
@@ -240,7 +240,7 @@ async function loadSaltyRoads(): Promise<any[]> {
   if (typeof window === "undefined") {
     return [];
   }
-  
+
   const L = await getLeaflet();
   const allSegments: any[] = [];
 
@@ -252,7 +252,7 @@ async function loadSaltyRoads(): Promise<any[]> {
 
       while (hasMore) {
         const response = await fetch(
-          `${layerUrl}/query?f=geojson&where=1=1&outSR=4326&outFields=*&resultOffset=${offset}&resultRecordCount=${pageSize}&returnGeometry=true`
+          `${layerUrl}/query?f=geojson&where=1=1&outSR=4326&outFields=*&resultOffset=${offset}&resultRecordCount=${pageSize}&returnGeometry=true`,
         );
         const data = await response.json();
 
@@ -263,7 +263,7 @@ async function loadSaltyRoads(): Promise<any[]> {
               feature.geometry.coordinates
             ) {
               const latlngs = feature.geometry.coordinates.map(
-                (coord: number[]) => [coord[1], coord[0]] as [number, number]
+                (coord: number[]) => [coord[1], coord[0]] as [number, number],
               );
               const polyline = L.polyline(latlngs);
               allSegments.push(polyline);
@@ -289,7 +289,7 @@ async function loadSaltyRoads(): Promise<any[]> {
  */
 async function findNearestRoadPoint(
   point: [number, number],
-  segments: any[]
+  segments: any[],
 ): Promise<[number, number] | null> {
   const L = await getLeaflet();
   let nearestPoint: [number, number] | null = null;
@@ -315,7 +315,7 @@ async function findNearestRoadPoint(
  */
 export async function calculateRoute(
   origin: [number, number],
-  destination: [number, number]
+  destination: [number, number],
 ): Promise<any | null> {
   if (typeof window === "undefined") {
     return null;
@@ -334,7 +334,7 @@ export async function calculateRoute(
     console.log(`Building graph from ${segments.length} segments...`);
     const graph = await buildGraph(segments);
     console.log(
-      `Graph built: ${graph.nodes.size} nodes, ${Array.from(graph.edges.values()).reduce((sum, edges) => sum + edges.length, 0)} edges`
+      `Graph built: ${graph.nodes.size} nodes, ${Array.from(graph.edges.values()).reduce((sum, edges) => sum + edges.length, 0)} edges`,
     );
 
     // Find nearest nodes to origin and destination
@@ -347,7 +347,12 @@ export async function calculateRoute(
       const originRoadPoint = await findNearestRoadPoint(origin, segments);
       const destRoadPoint = await findNearestRoadPoint(destination, segments);
       if (originRoadPoint && destRoadPoint) {
-        return L.polyline([origin, originRoadPoint, destRoadPoint, destination]);
+        return L.polyline([
+          origin,
+          originRoadPoint,
+          destRoadPoint,
+          destination,
+        ]);
       }
       return L.polyline([origin, destination]);
     }

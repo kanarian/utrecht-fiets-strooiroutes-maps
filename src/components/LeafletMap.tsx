@@ -158,10 +158,12 @@ export default function LeafletMap({
       {saltyRoadsData.length > 0 && (
         <GeoJSON
           key={`all-salty-roads-${saltyRoadsData.length}`}
-          data={{
-            type: "FeatureCollection",
-            features: saltyRoadsData,
-          }}
+          data={
+            {
+              type: "FeatureCollection",
+              features: saltyRoadsData,
+            } as any
+          }
           style={{
             color: "#0064ff",
             weight: 3,
